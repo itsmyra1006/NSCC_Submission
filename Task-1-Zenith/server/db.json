@@ -1,0 +1,60 @@
+{
+  "users": [
+    {
+      "_id": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "googleId": "110915727328845198202",
+      "name": "Myra Anand",
+      "email": "06anandmyra@gmail.com",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocKK6REyG1FUyILeORGLdr8zF3BWGyZoDx92jFZmVBbNCseVyQ=s96-c"
+    }
+  ],
+  "posts": [
+    {
+      "_id": "afe6287a-3741-46a3-8d04-4790d0f6c017",
+      "title": "heyaa",
+      "content": "hiiiiiii",
+      "author": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "likes": [],
+      "createdAt": "2025-09-12T17:09:04.584Z",
+      "updatedAt": "2025-09-12T17:25:04.393Z"
+    },
+    {
+      "_id": "db8bddaf-760f-4ae0-b5b4-61467e7f6624",
+      "title": "heya",
+      "content": "heyaaaaaaa",
+      "author": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "likes": [
+        "f1b20b19-7232-491b-9d78-1ae1c4ae113b"
+      ],
+      "createdAt": "2025-09-12T17:19:16.447Z",
+      "updatedAt": "2025-09-12T17:19:16.447Z"
+    },
+    {
+      "_id": "2f1ac2cb-c3b2-4680-9566-c701b632432a",
+      "title": "heya wassup",
+      "content": "wassup gng <3",
+      "author": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "likes": [
+        "f1b20b19-7232-491b-9d78-1ae1c4ae113b"
+      ],
+      "createdAt": "2025-09-12T17:34:30.523Z",
+      "updatedAt": "2025-09-12T17:34:46.178Z"
+    }
+  ],
+  "comments": [
+    {
+      "_id": "8be9f924-2594-455c-a218-fe29372063b5",
+      "text": "yeeee",
+      "author": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "post": "db8bddaf-760f-4ae0-b5b4-61467e7f6624",
+      "createdAt": "2025-09-12T17:25:30.458Z"
+    },
+    {
+      "_id": "042fb0ad-2d5b-4a0b-9ec0-9f637c1ec1c3",
+      "text": "yooo ts crazy ong\n",
+      "author": "f1b20b19-7232-491b-9d78-1ae1c4ae113b",
+      "post": "2f1ac2cb-c3b2-4680-9566-c701b632432a",
+      "createdAt": "2025-09-12T17:34:40.842Z"
+    }
+  ]
+}
