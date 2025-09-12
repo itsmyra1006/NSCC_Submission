@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { navigate } from '../router/Router';
 import Spinner from '../components/Spinner';
+import apiClient from '../apiClient'; // Import the new API client
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -13,9 +14,8 @@ const DashboardPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/dashboard');
-                if (!res.ok) throw new Error('Could not fetch dashboard data.');
-                const dashboardData = await res.json();
+                // Use the new apiClient to make the request
+                const dashboardData = await apiClient('/dashboard');
                 setData(dashboardData);
             } catch (err) {
                 setError(err.message);
@@ -27,6 +27,7 @@ const DashboardPage = () => {
         if (user) {
             fetchData();
         } else {
+            // If there's no user, no need to fetch, just stop loading.
             setLoading(false);
         }
     }, [user]);
@@ -36,7 +37,7 @@ const DashboardPage = () => {
     if (loading) return <div className="flex justify-center items-center h-96"><Spinner /></div>;
     if (error) return <div className="text-center text-red-400 py-10">Error: {error}</div>;
     if (!user) return <div className="text-center text-gray-400 py-10">Please log in to view your dashboard.</div>;
-    if (!data) return null;
+    if (!data) return null; // Don't render anything if there's no data yet
 
     const tabClasses = (tabName) => 
         `px-4 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2D283E] focus:ring-[#802BB1] ${

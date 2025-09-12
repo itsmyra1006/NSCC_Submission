@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext.jsx';
-import { navigate } from '../router/Router.jsx';
-import Spinner from '../components/Spinner.jsx';
+import { useAuth } from '../context/AuthContext';
+import { navigate } from '../router/Router';
+import Spinner from '../components/Spinner';
+import apiClient from '../apiClient'; // Import the new API client
 
-const PostFormPage = ({ postId }) => {
+const PostFormPage = () => {
+    const postId = window.location.pathname.split('/edit-post/')[1] || window.location.pathname.split('/create-post')[1] === '' ? null : undefined;
+    const isEditing = !!postId;
+    
     const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(isEditing); // Only load on mount if editing
+    const [formLoading, setFormLoading] = useState(false);
     const [error, setError] = useState('');
-    const isEditing = !!postId;
 
     useEffect(() => {
-        if (isEditing) {
-            setLoading(true);
+        if (isEditing && user) {
             const fetchPost = async () => {
                 try {
-                    const res = await fetch(`/api/post/${postId}`);
-                    if (!res.ok) throw new Error('Could not fetch post data.');
-                    const data = await res.json();
-                    if (data.author._id !== user?._id) {
+                    const data = await apiClient(`/post/${postId}`);
+                    if (data.author._id !== user._id) {
                          setError("You are not authorized to edit this post.");
+                         setTitle(data.title); // Show title but disallow editing
+                         setContent(data.content);
                          return;
                     }
                     setTitle(data.title);
@@ -43,28 +46,21 @@ const PostFormPage = ({ postId }) => {
             return;
         }
 
-        setLoading(true);
+        setFormLoading(true);
 
-        const url = isEditing ? `/api/post/${postId}` : '/api/posts';
+        const url = isEditing ? `/post/${postId}` : '/posts';
         const method = isEditing ? 'PUT' : 'POST';
 
         try {
-            const res = await fetch(url, {
+            const post = await apiClient(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content }),
+                body: { title, content },
             });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || 'Failed to save post.');
-            }
             
-            const post = await res.json();
             navigate(`/post/${post._id}`);
         } catch (err) {
             setError(err.message);
-            setLoading(false);
+            setFormLoading(false);
         }
     };
     
@@ -111,10 +107,10 @@ const PostFormPage = ({ postId }) => {
                     <div className="flex justify-end">
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#802BB1] hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:bg-gray-500"
+                            disabled={formLoading}
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#802BB1] hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
                         >
-                            {loading ? 'Saving...' : (isEditing ? 'Update Post' : 'Publish Post')}
+                            {formLoading ? 'Saving...' : (isEditing ? 'Update Post' : 'Publish Post')}
                         </button>
                     </div>
                 </form>

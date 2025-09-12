@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, 'react';
 import { useAuth } from '../context/AuthContext';
 import { navigate } from '../router/Router';
 import Spinner from '../components/Spinner';
+import apiClient from '../apiClient'; // Import the new API client
 
 const PostPage = () => {
     const postId = window.location.pathname.split('/post/')[1];
     const { user } = useAuth();
     const [post, setPost] = useState(null);
-    const [comments, setComments] = useState([]); // State for comments
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [commentText, setCommentText] = useState('');
@@ -23,11 +23,8 @@ const PostPage = () => {
 
         const fetchPost = async () => {
             try {
-                const res = await fetch(`/api/post/${postId}`);
-                if (!res.ok) throw new Error('Post not found');
-                const data = await res.json();
+                const data = await apiClient(`/post/${postId}`);
                 setPost(data);
-                setComments(data.comments); // Set comments state
                 setLikeCount(data.likes.length);
                 if (user) {
                     setIsLiked(data.likes.includes(user._id));
@@ -44,14 +41,17 @@ const PostPage = () => {
     const handleLike = async () => {
         if (!user) return navigate('/');
         
+        const originalLikedState = isLiked;
+        const originalLikeCount = likeCount;
+
         setIsLiked(!isLiked);
         setLikeCount(likeCount + (!isLiked ? 1 : -1));
 
         try {
-            await fetch(`/api/post/${postId}/like`, { method: 'POST' });
+            await apiClient(`/post/${postId}/like`, { method: 'POST' });
         } catch (err) {
-            setIsLiked(isLiked);
-            setLikeCount(likeCount);
+            setIsLiked(originalLikedState);
+            setLikeCount(originalLikeCount);
             console.error("Failed to like post:", err);
         }
     };
@@ -61,13 +61,11 @@ const PostPage = () => {
         if (!commentText.trim()) return;
 
         try {
-            const res = await fetch(`/api/post/${postId}/comments`, {
+            const newComment = await apiClient(`/post/${postId}/comments`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: commentText }),
+                body: { text: commentText },
             });
-            const newComment = await res.json();
-            setComments(prevComments => [...prevComments, newComment]); // Update comments state
+            setPost({ ...post, comments: [...post.comments, newComment] });
             setCommentText('');
         } catch (err) {
             console.error("Failed to add comment:", err);
@@ -77,7 +75,7 @@ const PostPage = () => {
      const handleDeletePost = async () => {
         if (window.confirm('Are you sure you want to delete this post?')) {
             try {
-                await fetch(`/api/post/${postId}`, { method: 'DELETE' });
+                await apiClient(`/post/${postId}`, { method: 'DELETE' });
                 navigate('/');
             } catch (err) {
                 console.error("Failed to delete post:", err);
@@ -88,26 +86,24 @@ const PostPage = () => {
     const handleDeleteComment = async (commentId) => {
         if (window.confirm('Are you sure you want to delete this comment?')) {
             try {
-                await fetch(`/api/post/${postId}/comments/${commentId}`, { method: 'DELETE' });
-                setComments(prevComments => prevComments.filter(c => c._id !== commentId)); // Update comments state
+                await apiClient(`/post/${postId}/comments/${commentId}`, { method: 'DELETE' });
+                setPost({ ...post, comments: post.comments.filter(c => c._id !== commentId) });
             } catch (err) {
                 console.error("Failed to delete comment:", err);
             }
         }
     };
 
-    const formatDateTime = (isoString) => new Date(isoString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-    });
+    const formatDateTime = (isoString) => {
+        return new Date(isoString).toLocaleString('en-US', {
+            month: 'long', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true
+        });
+    };
 
     if (loading) return <div className="flex justify-center items-center h-96"><Spinner /></div>;
-    if (error) return <div className="text-center text-red-500 py-10 bg-[#2D283E] -m-8 min-h-screen">Error: {error}</div>;
-    if (!post) return <div className="text-center text-gray-500 py-10 bg-[#2D283E] -m-8 min-h-screen">Post not found.</div>;
+    if (error) return <div className="text-center text-red-400 py-10">Error: {error}</div>;
+    if (!post) return <div className="text-center text-gray-400 py-10">Post not found.</div>;
 
     return (
         <div className="bg-[#2D283E] -m-8 p-8 min-h-screen text-[#D1D7E0]">
@@ -143,9 +139,9 @@ const PostPage = () => {
                 </article>
 
                 <section>
-                    <h2 className="text-2xl font-bold text-white mb-6">{comments.length} Comments</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">{post.comments.length} Comments</h2>
                     <div className="space-y-6">
-                        {comments.map(comment => (
+                        {post.comments.map(comment => (
                             <div key={comment._id} className="flex items-start space-x-4">
                                 <img className="h-10 w-10 rounded-full object-cover" src={comment.author?.picture} alt={comment.author?.name} />
                                 <div className="flex-1 bg-[#4C495D] rounded-lg p-4">

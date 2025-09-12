@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
+import apiClient from '../apiClient'; // Import the new API client
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -10,11 +11,8 @@ const HomePage = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const res = await fetch('/api/posts');
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await res.json();
+                // Use the new apiClient to make the request
+                const data = await apiClient('/posts');
                 setPosts(data);
             } catch (err) {
                 setError(err.message);
@@ -35,7 +33,7 @@ const HomePage = () => {
     }
     
     if (error) {
-        return <div className="text-center text-red-500">Error: {error}</div>;
+        return <div className="text-center text-red-400 p-8">Error: {error}</div>;
     }
 
     return (

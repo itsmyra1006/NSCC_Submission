@@ -1,54 +1,43 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import apiClient from './apiClient.js'; // Import the new API client
 
 const AuthContext = createContext(null);
 
+export const useAuth = () => useContext(AuthContext);
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        // The credentials 'include' is important to send cookies
-        const response = await fetch('/api/auth/me', {credentials: 'include'});
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data);
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const data = await apiClient('/auth/me');
+                setUser(data);
+            } catch (error) {
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const logout = async () => {
+        try {
+            await apiClient('/auth/logout', { method: 'POST' });
+            setUser(null);
+        } catch (error) {
+            console.error("Logout failed:", error);
         }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setLoading(false);
-      }
     };
-    fetchUser();
-  }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-  };
+    const value = { user, setUser, loading, logout };
 
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { 
-        method: 'POST' ,
-        credentials: 'include'
-      });
-      setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  const value = { user, loading, login, logout };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={value}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
