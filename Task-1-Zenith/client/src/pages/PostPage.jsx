@@ -1,8 +1,8 @@
-import React, 'react';
-import { useAuth } from '../context/AuthContext';
-import { navigate } from '../router/Router';
-import Spinner from '../components/Spinner';
-import apiClient from '../apiClient'; // Import the new API client
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { navigate } from '../router/Router.jsx';
+import Spinner from '../components/Spinner.jsx';
+import apiClient from '../apiClient.js';
 
 const PostPage = () => {
     const postId = window.location.pathname.split('/post/')[1];
@@ -72,7 +72,7 @@ const PostPage = () => {
         }
     };
 
-     const handleDeletePost = async () => {
+    const handleDeletePost = async () => {
         if (window.confirm('Are you sure you want to delete this post?')) {
             try {
                 await apiClient(`/post/${postId}`, { method: 'DELETE' });
@@ -94,12 +94,7 @@ const PostPage = () => {
         }
     };
 
-    const formatDateTime = (isoString) => {
-        return new Date(isoString).toLocaleString('en-US', {
-            month: 'long', day: 'numeric', year: 'numeric',
-            hour: 'numeric', minute: '2-digit', hour12: true
-        });
-    };
+    const formatDateTime = (isoString) => new Date(isoString).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 
     if (loading) return <div className="flex justify-center items-center h-96"><Spinner /></div>;
     if (error) return <div className="text-center text-red-400 py-10">Error: {error}</div>;
@@ -139,7 +134,7 @@ const PostPage = () => {
                 </article>
 
                 <section>
-                    <h2 className="text-2xl font-bold text-white mb-6">{post.comments.length} Comments</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">{post.comments.length} {post.comments.length === 1 ? 'Comment' : 'Comments'}</h2>
                     <div className="space-y-6">
                         {post.comments.map(comment => (
                             <div key={comment._id} className="flex items-start space-x-4">
