@@ -14,27 +14,19 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: UI_ROOT_URI
-        fromService:
-          type: static 
-          name: zenith-client
-          property: url
+        value: "https://placeholder-for-client-url.com" # We will update this manually later
       - key: SERVER_ROOT_URI
-        fromService:
-          type: web
-          name: zenith-server
-          property: url
+        value: "https://placeholder-for-server-url.com" # We will update this manually later
 
   # Static Site for the Frontend
-  - type: static 
+  - type: static_site
     name: zenith-client
     rootDir: Task-1-Zenith/client
     buildCommand: "npm run build"
     publishDir: "dist"
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: zenith-server
-          property: url
+        value: "https://placeholder-for-server-url.com" # We will update this manually later
       - key: VITE_GOOGLE_CLIENT_ID
         sync: false
+
