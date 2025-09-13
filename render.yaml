@@ -1,0 +1,40 @@
+services:
+  # Web Service for the Backend
+  - type: web
+    name: zenith-server
+    env: node
+    rootDir: Task-1-Zenith/server
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: UI_ROOT_URI # Will be auto-filled by the frontend service
+        fromService:
+          type: static_site
+          name: zenith-client
+          property: url
+      - key: SERVER_ROOT_URI
+        fromService:
+          type: web
+          name: zenith-server
+          property: url
+
+  # Static Site for the Frontend
+  - type: static_site
+    name: zenith-client
+    rootDir: Task-1-Zenith/client
+    buildCommand: "npm run build"
+    publishDir: "dist"
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: zenith-server
+          property: url
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
