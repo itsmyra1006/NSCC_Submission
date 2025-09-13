@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        :root { --bg-color: #f0f2f5; --container-bg: white; --text-color: #333; --subtle-text-color: #666; --border-color: #ddd; --header-bg: #f8f9fa; --shadow-color: rgba(0, 0, 0, 0.1); --attended-bg: #d4edda; --attended-text: #155724; --registered-bg: #fff3cd; --registered-text: #856404; --export-btn-bg: #28a745; --export-btn-hover: #218838; }
+        body.dark-theme { --bg-color: #1a1a1a; --container-bg: #2c2c2c; --text-color: #e0e0e0; --subtle-text-color: #aaa; --border-color: #444; --header-bg: #3a3a3a; --shadow-color: rgba(0, 0, 0, 0.4); --attended-bg: #155724; --attended-text: #d4edda; --registered-bg: #856404; --registered-text: #fff3cd; --export-btn-bg: #218838; --export-btn-hover: #1c6e2e; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 2rem; transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: var(--container-bg); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color); transition: background-color 0.3s; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+        h1 { margin: 0; }
+        #last-updated { color: var(--subtle-text-color); font-size: 0.9rem; }
+        #export-btn { padding: 0.75rem 1.5rem; background-color: var(--export-btn-bg); color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; }
+        #export-btn:hover { background-color: var(--export-btn-hover); }
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--header-bg); }
+        .status { padding: 0.25rem 0.5rem; border-radius: 12px; font-weight: bold; font-size: 0.8rem; }
+        .status-attended { background-color: var(--attended-bg); color: var(--attended-text); }
+        .status-registered { background-color: var(--registered-bg); color: var(--registered-text); }
+        .theme-toggle-btn { position: absolute; top: 20px; right: 20px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 10; font-size: 20px; line-height: 1; padding: 0; }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme"><span id="theme-icon"></span></button>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p id="last-updated">Loading...</p>
+            </div>
+            <button id="export-btn">Export to Excel</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registration ID</th>
+                    <th>Status</th>
+                    <th>Check-in Time</th>
+                </tr>
+            </thead>
+            <tbody id="participants-table-body"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        const tableBody = document.getElementById('participants-table-body');
+        const lastUpdatedEl = document.getElementById('last-updated');
+        const exportBtn = document.getElementById('export-btn');
+        let currentParticipantsData = [];
+        async function fetchAndRenderData() {
+            try {
+                const response = await fetch('/api/admin/data');
+                const participants = await response.json();
+                currentParticipantsData = participants;
+                tableBody.innerHTML = '';
+                participants.forEach(p => {
+                    const row = document.createElement('tr');
+                    const statusClass = p.status === 'Attended' ? 'status-attended' : 'status-registered';
+                    const formattedTimestamp = p.checkInTimestamp ? new Date(p.checkInTimestamp).toLocaleString() : 'N/A';
+                    row.innerHTML = `<td>${p.name}</td><td>${p.email}</td><td>${p.registrationId}</td><td><span class="status ${statusClass}">${p.status}</span></td><td>${formattedTimestamp}</td>`;
+                    tableBody.appendChild(row);
+                });
+                lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                console.error('Failed to fetch admin data:', error);
+                lastUpdatedEl.textContent = 'Error loading data.';
+            }
+        }
+        setInterval(fetchAndRenderData, 5000);
+        fetchAndRenderData();
+        exportBtn.addEventListener('click', () => {
+            const worksheet = XLSX.utils.json_to_sheet(currentParticipantsData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Event-Attendance-${today}.xlsx`);
+        });
+
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const applyTheme = (theme) => {
+            if (theme === 'dark') { document.body.classList.add('dark-theme'); themeIcon.textContent = '☀️'; } 
+            else { document.body.classList.remove('dark-theme'); themeIcon.textContent = '🌙'; }
+        };
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+        themeToggleBtn.addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    </script>
+</body>
+</html>
