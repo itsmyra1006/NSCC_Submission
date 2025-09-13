@@ -19,7 +19,7 @@ services:
         value: "https://placeholder-for-server-url.com" # We will update this manually later
 
   # Static Site for the Frontend
-  - type: static_site
+  - type: static
     name: zenith-client
     rootDir: Task-1-Zenith/client
     buildCommand: "npm run build"
