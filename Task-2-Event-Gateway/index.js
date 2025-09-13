@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 async function startServer() {
-  const db = await initializeDatabase(); // db is now the pg Client
+  const db = await initializeDatabase();
 
   app.use(express.json());
   app.use(express.static('public'));
@@ -15,6 +15,7 @@ async function startServer() {
   app.get('/api', (req, res) => res.json({ message: '🚀 Event-Gateway API is running!' }));
 
   app.post('/api/register', async (req, res) => {
+    // ... (this route is unchanged from the revert)
     const { name, email, registrationId } = req.body;
     try {
       if (!name || !email || !registrationId) return res.status(400).json({ error: 'All fields are required.' });
@@ -25,7 +26,7 @@ async function startServer() {
       sendQrCodeEmail(email, name, uniqueToken);
       res.status(201).json({ message: 'Registration successful!', token: uniqueToken });
     } catch (error) {
-      if (error.code === '23505') { // PostgreSQL unique violation code
+      if (error.code === '23505') {
         console.log(`✅ Duplicate registration attempt for: ${email}.`);
         const result = await db.query('SELECT name, "uniqueToken" FROM participants WHERE email = $1 OR "registrationId" = $2', [email, registrationId]);
         const existingParticipant = result.rows[0];
@@ -40,6 +41,7 @@ async function startServer() {
   });
 
   app.post('/api/checkin', async (req, res) => {
+    // ... (this route is unchanged from the revert)
     try {
       const { token } = req.body;
       if (!token) return res.status(400).json({ error: 'Token is required.' });
@@ -56,8 +58,9 @@ async function startServer() {
       res.status(500).json({ error: 'An internal server error occurred.' });
     }
   });
-
+  
   app.get('/api/admin/data', async (req, res) => {
+    // ... (this route is unchanged from the revert)
     try {
       const result = await db.query('SELECT * FROM participants ORDER BY name ASC');
       res.status(200).json(result.rows);
@@ -66,6 +69,26 @@ async function startServer() {
       res.status(500).json({ error: 'An internal server error occurred.' });
     }
   });
+
+  // --- NEW: SECURE DATABASE CLEAR ENDPOINT ---
+  app.post('/api/admin/clear', async (req, res) => {
+    const providedKey = req.query.key;
+    const secretKey = process.env.ADMIN_SECRET_KEY;
+
+    if (!providedKey || providedKey !== secretKey) {
+        return res.status(403).json({ error: 'Access Denied.' });
+    }
+    
+    try {
+        await db.query('TRUNCATE TABLE participants RESTART IDENTITY;');
+        console.log('✅ Participants table has been cleared.');
+        res.status(200).json({ message: 'All entries have been successfully cleared.' });
+    } catch (error) {
+        console.error('❌ Error clearing database:', error);
+        res.status(500).json({ error: 'Failed to clear database.' });
+    }
+  });
+
 
   app.listen(PORT, () => console.log(`✅ Server is listening on http://localhost:${PORT}`));
 }

@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
-        :root { --bg-color: #f0f2f5; --container-bg: white; --text-color: #333; --subtle-text-color: #666; --border-color: #ddd; --header-bg: #f8f9fa; --shadow-color: rgba(0, 0, 0, 0.1); --attended-bg: #d4edda; --attended-text: #155724; --registered-bg: #fff3cd; --registered-text: #856404; --export-btn-bg: #28a745; --export-btn-hover: #218838; }
-        body.dark-theme { --bg-color: #1a1a1a; --container-bg: #2c2c2c; --text-color: #e0e0e0; --subtle-text-color: #aaa; --border-color: #444; --header-bg: #3a3a3a; --shadow-color: rgba(0, 0, 0, 0.4); --attended-bg: #155724; --attended-text: #d4edda; --registered-bg: #856404; --registered-text: #fff3cd; --export-btn-bg: #218838; --export-btn-hover: #1c6e2e; }
+        :root { --bg-color: #f0f2f5; --container-bg: white; --text-color: #333; --subtle-text-color: #666; --border-color: #ddd; --header-bg: #f8f9fa; --shadow-color: rgba(0, 0, 0, 0.1); --attended-bg: #d4edda; --attended-text: #155724; --registered-bg: #fff3cd; --registered-text: #856404; --export-btn-bg: #28a745; --export-btn-hover: #218838; --danger-btn-bg: #dc3545; --danger-btn-hover: #c82333;}
+        body.dark-theme { --bg-color: #1a1a1a; --container-bg: #2c2c2c; --text-color: #e0e0e0; --subtle-text-color: #aaa; --border-color: #444; --header-bg: #3a3a3a; --shadow-color: rgba(0, 0, 0, 0.4); --attended-bg: #155724; --attended-text: #d4edda; --registered-bg: #856404; --registered-text: #fff3cd; --export-btn-bg: #218838; --export-btn-hover: #1c6e2e; --danger-btn-bg: #c82333; --danger-btn-hover: #a51c29; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 2rem; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; background-color: var(--container-bg); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color); transition: background-color 0.3s; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .header-buttons { display: flex; gap: 1rem; }
         h1 { margin: 0; }
         #last-updated { color: var(--subtle-text-color); font-size: 0.9rem; }
-        #export-btn { padding: 0.75rem 1.5rem; background-color: var(--export-btn-bg); color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; }
+        .button { padding: 0.75rem 1.5rem; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; }
+        #export-btn { background-color: var(--export-btn-bg); }
         #export-btn:hover { background-color: var(--export-btn-hover); }
+        #clear-db-btn { background-color: var(--danger-btn-bg); }
+        #clear-db-btn:hover { background-color: var(--danger-btn-hover); }
         table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
         th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
         th { background-color: var(--header-bg); }
@@ -21,6 +25,7 @@
         .status-attended { background-color: var(--attended-bg); color: var(--attended-text); }
         .status-registered { background-color: var(--registered-bg); color: var(--registered-text); }
         .theme-toggle-btn { position: absolute; top: 20px; right: 20px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 10; font-size: 20px; line-height: 1; padding: 0; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -31,7 +36,10 @@
                 <h1>Admin Dashboard</h1>
                 <p id="last-updated">Loading...</p>
             </div>
-            <button id="export-btn">Export to Excel</button>
+            <div class="header-buttons">
+                <button id="export-btn" class="button">Export to Excel</button>
+                <button id="clear-db-btn" class="button hidden">Clear All Entries</button>
+            </div>
         </div>
         <table>
             <thead>
@@ -52,10 +60,16 @@
         const tableBody = document.getElementById('participants-table-body');
         const lastUpdatedEl = document.getElementById('last-updated');
         const exportBtn = document.getElementById('export-btn');
+        const clearDbBtn = document.getElementById('clear-db-btn');
         let currentParticipantsData = [];
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const adminKey = urlParams.get('key');
+
         async function fetchAndRenderData() {
             try {
                 const response = await fetch('/api/admin/data');
+                if (!response.ok) throw new Error('Could not fetch data.');
                 const participants = await response.json();
                 currentParticipantsData = participants;
                 tableBody.innerHTML = '';
@@ -69,7 +83,7 @@
                 lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
             } catch (error) {
                 console.error('Failed to fetch admin data:', error);
-                lastUpdatedEl.textContent = 'Error loading data.';
+                lastUpdatedEl.textContent = `Error: ${error.message}`;
             }
         }
         setInterval(fetchAndRenderData, 5000);
@@ -81,6 +95,27 @@
             const today = new Date().toISOString().slice(0, 10);
             XLSX.writeFile(workbook, `Event-Attendance-${today}.xlsx`);
         });
+
+        // --- NEW: Logic for the Clear DB Button ---
+        if (adminKey) {
+            clearDbBtn.classList.remove('hidden'); // Show the button if a key is in the URL
+
+            clearDbBtn.addEventListener('click', async () => {
+                if (confirm('ARE YOU SURE you want to permanently delete all entries? This cannot be undone.')) {
+                    try {
+                        const response = await fetch(`/api/admin/clear?key=${adminKey}`, {
+                            method: 'POST',
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error);
+                        alert('Database successfully cleared!');
+                        fetchAndRenderData(); // Refresh the table
+                    } catch (error) {
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            });
+        }
 
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
