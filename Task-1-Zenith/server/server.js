@@ -1,13 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
-
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
-
 
 const app = express();
 
@@ -24,7 +22,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api', postRoutes);
 
+// *** BUG FIX: Use Render's assigned port in production ***
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
