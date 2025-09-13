@@ -1,9 +1,12 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import apiClient from './apiClient.js'; // Import the new API client
+import { createContext, useState, useContext, useEffect } from 'react';
+import apiClient from '../apiClient.js'; 
+import Spinner from '../components/Spinner.jsx';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -15,6 +18,7 @@ export const AuthProvider = ({ children }) => {
                 const data = await apiClient('/auth/me');
                 setUser(data);
             } catch (error) {
+                // This is expected if the user is not logged in
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -32,11 +36,23 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const value = { user, setUser, loading, logout };
+    const value = {
+        user,
+        isAuthenticated: !!user,
+        logout,
+    };
+
+    if (loading) {
+        return (
+            <div className="bg-[#2D283E] min-h-screen flex justify-center items-center">
+                <Spinner />
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
