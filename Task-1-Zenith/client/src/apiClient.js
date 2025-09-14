@@ -1,8 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Get the base URL from environment variables for deployment,
+// or use an empty string for local development (which will use the proxy).
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-const apiClient = async (endpoint, options = {}) => {
-    const { body, ...customConfig } = options;
-
+const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
     const headers = { 'Content-Type': 'application/json' };
 
     const config = {
@@ -18,26 +18,27 @@ const apiClient = async (endpoint, options = {}) => {
         config.body = JSON.stringify(body);
     }
 
+    let response;
     try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-        if (!response.ok) {
-            // Try to get a meaningful error message from the JSON body
-            const errorData = await response.json().catch(() => ({ message: `Network response was not ok: ${response.statusText}` }));
-            throw new Error(errorData.message);
-        }
-        
-        // Handle cases where the response might be empty (like a successful DELETE)
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-            return await response.json();
-        } else {
-            return true; // Return a simple success indicator
-        }
-
+        // *** THIS IS THE FIX: Prepend '/api' to every request URL ***
+        response = await fetch(`${BASE_URL}/api${endpoint}`, config);
     } catch (error) {
-        console.error('API call failed:', error);
-        throw error;
+        console.error("API call failed:", error);
+        throw new Error("Failed to fetch");
     }
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network response was not ok' }));
+        console.error("API Error Response:", errorData);
+        throw new Error(errorData.message || 'Network response was not ok');
+    }
+
+    // Handle cases where the response might be empty (e.g., a 204 No Content)
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        return response.json();
+    }
+    return; // Return nothing for non-json responses
 };
 
 export default apiClient;
