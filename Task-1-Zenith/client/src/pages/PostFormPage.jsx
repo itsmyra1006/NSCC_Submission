@@ -2,28 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { navigate } from '../router/Router';
 import Spinner from '../components/Spinner';
-import apiClient from '../apiClient'; // Import the new API client
+import apiClient from '../apiClient';
 
 const PostFormPage = () => {
-    const postId = window.location.pathname.split('/edit-post/')[1] || window.location.pathname.split('/create-post')[1] === '' ? null : undefined;
-    const isEditing = !!postId;
-    
+    const pathParts = window.location.pathname.split('/edit-post/');
+    const postId = pathParts.length > 1 ? pathParts[1] : null;
+
     const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [loading, setLoading] = useState(isEditing); // Only load on mount if editing
-    const [formLoading, setFormLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const isEditing = !!postId;
 
     useEffect(() => {
         if (isEditing && user) {
+            setLoading(true);
             const fetchPost = async () => {
                 try {
                     const data = await apiClient(`/post/${postId}`);
+                    // Security check: ensure the logged-in user is the post author
                     if (data.author._id !== user._id) {
                          setError("You are not authorized to edit this post.");
-                         setTitle(data.title); // Show title but disallow editing
-                         setContent(data.content);
                          return;
                     }
                     setTitle(data.title);
@@ -46,7 +46,7 @@ const PostFormPage = () => {
             return;
         }
 
-        setFormLoading(true);
+        setLoading(true);
 
         const url = isEditing ? `/post/${postId}` : '/posts';
         const method = isEditing ? 'PUT' : 'POST';
@@ -56,11 +56,10 @@ const PostFormPage = () => {
                 method,
                 body: { title, content },
             });
-            
             navigate(`/post/${post._id}`);
         } catch (err) {
             setError(err.message);
-            setFormLoading(false);
+            setLoading(false);
         }
     };
     
@@ -107,10 +106,10 @@ const PostFormPage = () => {
                     <div className="flex justify-end">
                         <button
                             type="submit"
-                            disabled={formLoading}
-                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#802BB1] hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                            disabled={loading}
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#802BB1] hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50"
                         >
-                            {formLoading ? 'Saving...' : (isEditing ? 'Update Post' : 'Publish Post')}
+                            {loading ? 'Saving...' : (isEditing ? 'Update Post' : 'Publish Post')}
                         </button>
                     </div>
                 </form>
