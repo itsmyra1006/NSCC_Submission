@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { navigate } from '../router/Router';
-import Spinner from '../components/Spinner';
-import apiClient from '../apiClient';
+import { useAuth } from '../context/AuthContext.jsx';
+import { navigate } from '../router/Router.jsx';
+import Spinner from '../components/Spinner.jsx';
+import apiClient from '../apiClient.js';
 
 const PostFormPage = () => {
     const pathParts = window.location.pathname.split('/edit-post/');
@@ -21,7 +21,6 @@ const PostFormPage = () => {
             const fetchPost = async () => {
                 try {
                     const data = await apiClient(`/post/${postId}`);
-                    // Security check: ensure the logged-in user is the post author
                     if (data.author._id !== user._id) {
                          setError("You are not authorized to edit this post.");
                          return;
@@ -66,7 +65,7 @@ const PostFormPage = () => {
     if (loading) return <div className="flex justify-center items-center h-96"><Spinner /></div>;
 
     return (
-        <div className="bg-[#2D283E] -m-8 p-8 min-h-screen">
+        <div className="bg-[#2D283E] p-8 min-h-screen">
             <div className="max-w-4xl mx-auto">
                 <form onSubmit={handleSubmit} className="bg-[#4C495D] p-8 rounded-lg shadow-2xl">
                     <h1 className="text-3xl sm:text-4xl font-bold text-white mb-8 border-b border-[#564F6F] pb-4">

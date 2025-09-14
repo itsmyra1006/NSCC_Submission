@@ -1,9 +1,8 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext.jsx';
-import { navigate } from '../router/Router.jsx';
-import Spinner from '../components/Spinner.jsx';
-import apiClient from '../apiClient.js';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { navigate } from '../router/Router';
+import Spinner from '../components/Spinner';
+import apiClient from '../apiClient';
 
 const PostPage = () => {
     const postId = window.location.pathname.split('/post/')[1];
@@ -102,7 +101,7 @@ const PostPage = () => {
     if (!post) return <div className="text-center text-gray-400 py-10">Post not found.</div>;
 
     return (
-        <div className="bg-[#2D283E] -m-8 p-8 min-h-screen text-[#D1D7E0]">
+        <div className="bg-[#2D283E] p-8 min-h-screen text-[#D1D7E0]">
             <div className="max-w-4xl mx-auto">
                 <article>
                     <header className="mb-8">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { navigate } from '../router/Router';
 import Spinner from '../components/Spinner';
-import apiClient from '../apiClient'; // Import the new API client
+import apiClient from '../apiClient';
 
 const DashboardPage = () => {
     const { user } = useAuth();
@@ -14,7 +14,6 @@ const DashboardPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Use the new apiClient to make the request
                 const dashboardData = await apiClient('/dashboard');
                 setData(dashboardData);
             } catch (err) {
@@ -27,7 +26,7 @@ const DashboardPage = () => {
         if (user) {
             fetchData();
         } else {
-            // If there's no user, no need to fetch, just stop loading.
+            // If user logs out while on the page, or is not logged in
             setLoading(false);
         }
     }, [user]);
@@ -37,7 +36,7 @@ const DashboardPage = () => {
     if (loading) return <div className="flex justify-center items-center h-96"><Spinner /></div>;
     if (error) return <div className="text-center text-red-400 py-10">Error: {error}</div>;
     if (!user) return <div className="text-center text-gray-400 py-10">Please log in to view your dashboard.</div>;
-    if (!data) return null; // Don't render anything if there's no data yet
+    if (!data) return null;
 
     const tabClasses = (tabName) => 
         `px-4 py-2 text-sm font-semibold rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#2D283E] focus:ring-[#802BB1] ${
@@ -84,7 +83,7 @@ const DashboardPage = () => {
     };
 
     return (
-        <div className="bg-[#2D283E] -m-8 p-8 min-h-screen">
+        <div className="bg-[#2D283E] p-8 min-h-screen">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center mb-8">
                     <img src={user.picture} className="h-20 w-20 rounded-full mr-6 border-4 border-[#4C495D]" alt={user.name} />

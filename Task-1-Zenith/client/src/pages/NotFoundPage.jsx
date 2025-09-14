@@ -1,9 +1,9 @@
 import React from 'react';
-import { navigate } from '../router/Router.jsx';
+import { navigate } from '../router/Router';
 
 const NotFoundPage = () => {
   return (
-    <div className="bg-[#2D283E] -m-8 p-8 min-h-screen flex items-center justify-center text-center">
+    <div className="bg-[#2D283E] p-8 min-h-screen flex items-center justify-center text-center">
       <div>
         <h1 className="text-9xl font-black text-[#4C495D] select-none">404</h1>
         <h2 className="text-3xl font-bold text-white mt-4">Uh-oh! Page Not Found.</h2>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PostCard from '../components/PostCard';
 import Spinner from '../components/Spinner';
-import apiClient from '../apiClient'; // Import the new API client
+import apiClient from '../apiClient';
 
 const HomePage = () => {
     const [posts, setPosts] = useState([]);
@@ -11,7 +11,6 @@ const HomePage = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                // Use the new apiClient to make the request
                 const data = await apiClient('/posts');
                 setPosts(data);
             } catch (err) {
@@ -37,7 +36,7 @@ const HomePage = () => {
     }
 
     return (
-        <div className="bg-[#2D283E] -m-8 p-8 min-h-screen">
+        <div className="bg-[#2D283E] p-8 min-h-screen">
             <div className="container mx-auto">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2">Latest Stories</h1>
@@ -62,4 +61,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
