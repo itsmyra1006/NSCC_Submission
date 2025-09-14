@@ -6,6 +6,7 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
     const config = {
         method: body ? 'POST' : 'GET',
         ...customConfig,
+        credentials: 'include', 
         headers: {
             ...headers,
             ...customConfig.headers,
@@ -30,12 +31,11 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
         throw new Error(errorData.message || `Network response was not ok: ${response.statusText}`);
     }
 
-    // Handle cases where the response might be empty (e.g., a 204 No Content)
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
     }
-    return; // Return nothing for non-json responses
+    return;
 };
 
 export default apiClient;
