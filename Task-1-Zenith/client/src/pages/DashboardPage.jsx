@@ -22,11 +22,9 @@ const DashboardPage = () => {
                 setLoading(false);
             }
         };
-
         if (user) {
             fetchData();
         } else {
-            // If user logs out while on the page, or is not logged in
             setLoading(false);
         }
     }, [user]);
@@ -83,7 +81,7 @@ const DashboardPage = () => {
     };
 
     return (
-        <div className="bg-[#2D283E] p-8 min-h-screen">
+        <div className="bg-[#2D283E] -m-8 p-8 min-h-screen">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center mb-8">
                     <img src={user.picture} className="h-20 w-20 rounded-full mr-6 border-4 border-[#4C495D]" alt={user.name} />
@@ -92,7 +90,6 @@ const DashboardPage = () => {
                         <p className="text-md text-gray-400">{user.email}</p>
                     </div>
                 </div>
-
                 <div className="bg-[#2D283E]">
                     <div className="border-b border-[#4C495D] mb-6">
                         <nav className="flex space-x-4" aria-label="Tabs">
@@ -109,6 +106,4 @@ const DashboardPage = () => {
         </div>
     );
 };
-
 export default DashboardPage;
-
