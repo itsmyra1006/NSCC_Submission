@@ -47,7 +47,6 @@ const googleAuthCallback = async (req, res) => {
             };
             db.data.users.push(user);
         } else {
-            // If user exists, update their name and picture
             user.name = googleUser.name;
             user.picture = googleUser.picture;
         }
@@ -57,8 +56,9 @@ const googleAuthCallback = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
-            sameSite: 'strict',
+            secure: true, // Must be true for SameSite=None
+            // *** THIS IS THE FIX: Allow the cookie to be sent from a different domain ***
+            sameSite: 'none', 
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
@@ -73,7 +73,6 @@ const getCurrentUser = async (req, res) => {
     if (req.user) {
         res.json(req.user);
     } else {
-        // This case is handled by the protect middleware, but as a fallback:
         res.status(401).json({ message: 'Not authorized' });
     }
 };
@@ -81,10 +80,11 @@ const getCurrentUser = async (req, res) => {
 const logoutUser = (req, res) => {
     res.cookie('token', '', {
         httpOnly: true,
+        secure: true,
+        sameSite: 'none',
         expires: new Date(0),
     });
     res.status(200).json({ message: 'Logged out successfully' });
 };
 
 export { googleAuth, googleAuthCallback, getCurrentUser, logoutUser };
-
