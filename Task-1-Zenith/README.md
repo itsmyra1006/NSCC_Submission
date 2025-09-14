@@ -1,6 +1,15 @@
 # Task 1: Zenith - A Full-Stack Blog Application
 Zenith is a feature-rich, full-stack blog platform built from the ground up with a custom Google OAuth 2.0 authentication system. This project demonstrates a comprehensive understanding of modern web development, from backend architecture and database management to frontend state handling and a polished UI/UX.
 
+## 🔴 Live Demo
+You can view and test the live, deployed application here:
+
+`https://zenith-client-ruddy.vercel.app/`
+
+## 📸 Screenshots
+
+
+
 ## ✨ Features
 **Custom Google OAuth 2.0:** Secure user login and session management handled manually without Firebase/Supabase.
 
