@@ -9,10 +9,14 @@ dotenv.config();
 
 const app = express();
 
+// Middleware
 app.use(cors({
   origin: process.env.UI_ROOT_URI,
   credentials: true,
 }));
+
+// *** THIS IS THE FIX: Trust the proxy headers from Render ***
+app.set('trust proxy', 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,7 +26,6 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api', postRoutes);
 
-// *** BUG FIX: Use Render's assigned port in production ***
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

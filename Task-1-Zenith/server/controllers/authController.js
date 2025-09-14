@@ -56,8 +56,7 @@ const googleAuthCallback = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true, // Must be true for SameSite=None
-            // *** THIS IS THE FIX: Allow the cookie to be sent from a different domain ***
+            secure: true, 
             sameSite: 'none', 
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
