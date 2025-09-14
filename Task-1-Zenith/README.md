@@ -8,7 +8,9 @@ You can view and test the live, deployed application here:
 
 ## 📸 Screenshots
 
-
+<img width="1889" height="881" alt="image" src="https://github.com/user-attachments/assets/d46a44ed-b84d-42df-95d5-0fc738313db9" />
+<img width="1888" height="884" alt="Screenshot 2025-09-15 004011" src="https://github.com/user-attachments/assets/0753ece4-e68a-40bc-bc49-f55ba29351d9" />
+<img width="1884" height="894" alt="image" src="https://github.com/user-attachments/assets/6dc404c9-7f93-4492-b045-c218c36821b4" />
 
 ## ✨ Features
 **Custom Google OAuth 2.0:** Secure user login and session management handled manually without Firebase/Supabase.
